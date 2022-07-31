@@ -1,4 +1,4 @@
-import { effect } from '../effect'
+import { effect, stop } from '../effect'
 import { reactive } from '../reactive'
 
 describe('effect', () => {
@@ -70,5 +70,46 @@ describe('effect', () => {
     run();
     // should have run
     expect(dummy).toBe(2);
+  })
+
+  it('stop', () => {
+    let dummy;
+    const obj = reactive({ prop: 1 })
+    const runner = effect(() => {
+      dummy = obj.prop
+    })
+    
+    expect(dummy).toBe(1);
+    obj.prop = 2;
+    expect(dummy).toBe(2);
+    
+    stop(runner);
+    // TODO 这时候如果改成 obj.prop++，stop并不能够清除 effect
+    obj.prop = 3;
+    expect(dummy).toBe(2);
+
+    runner();
+    expect(dummy).toBe(3);
+  })
+
+  it('onStop', () => {
+    const obj = reactive({
+      foo: 1,
+    })
+    const onStop = jest.fn();
+
+    let dummy;
+    const runner = effect(() => {
+      dummy = obj.foo
+    }, {
+      onStop,
+    })
+
+    expect(dummy).toBe(1)
+
+    stop(runner)
+    obj.foo = 2
+    expect(dummy).toBe(1)
+    expect(onStop).toBeCalledTimes(1)
   })
 })
