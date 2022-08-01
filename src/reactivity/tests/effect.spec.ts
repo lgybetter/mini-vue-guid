@@ -84,12 +84,17 @@ describe('effect', () => {
     expect(dummy).toBe(2);
     
     stop(runner);
-    // TODO 这时候如果改成 obj.prop++，stop并不能够清除 effect
+    obj.prop++;
+    expect(dummy).toBe(2);
+
     obj.prop = 3;
     expect(dummy).toBe(2);
 
+    obj.prop++;
+    expect(dummy).toBe(2);
+
     runner();
-    expect(dummy).toBe(3);
+    expect(dummy).toBe(4);
   })
 
   it('onStop', () => {
