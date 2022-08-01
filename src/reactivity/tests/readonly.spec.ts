@@ -1,4 +1,4 @@
-import { readonly } from "../reactive";
+import { readonly, isReadonly } from "../reactive";
 
 describe('readonly', () => {
   it('should make nested values readonly', () => {
@@ -10,6 +10,8 @@ describe('readonly', () => {
     }
     const wrapped = readonly(original);
     expect(wrapped).not.toBe(original)
+    expect(isReadonly(wrapped)).toBe(true);
+    expect(isReadonly(original)).toBe(false);
     expect(wrapped.foo).toBe(1)
   })
 
