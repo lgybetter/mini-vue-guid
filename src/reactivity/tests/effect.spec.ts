@@ -28,7 +28,6 @@ describe('effect', () => {
      */
     let foo = 0;
     const add = () => {
-      // console.log(this)
       foo++;
       return foo;
     }
@@ -47,7 +46,6 @@ describe('effect', () => {
     let run: any;
 
     const scheduler = jest.fn(() => {
-      // console.log('obj.foo 更新')
       run = runner;
     })
 
