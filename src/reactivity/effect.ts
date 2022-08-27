@@ -102,6 +102,11 @@ export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler)
   extend(_effect, options);
 
+  /**
+   * 触发 reactive 响应式对象的 get 拦截
+   * get 触发 track 进行依赖收集
+   * effect 回调函数中的响应式对象属性添加了当前的 ReactiveEffect 实例作为依赖
+   */
   _effect.run();
 
   const runner: any = _effect.run.bind(_effect);
