@@ -8,7 +8,7 @@ const readonlyGet = createGetter(true);
 const shallowReadonlyGet = createGetter(true, true)
 
 function createGetter(isReadonly = false, shallow = false) {
-  return function get(target, key) {
+  return function get(target: Object, key: string) {
     if (key === ReactiveFlags.IS_REACTIVE) {
       return !isReadonly;
     } else if (key === ReactiveFlags.IS_READONLY) {
@@ -35,7 +35,7 @@ function createGetter(isReadonly = false, shallow = false) {
 }
 
 function createSetter() {
-  return function set(target, key, value) {
+  return function set(target: Object, key: string, value: any) {
     const res = Reflect.set(target, key, value)
 
     trigger(target, key)
@@ -51,7 +51,7 @@ export const mutableHandlers = {
 
 export const readonlyHandlers = {
   get: readonlyGet,
-  set(target, key) {
+  set(target: Object, key: string) {
     console.warn(
       `key :"${String(key)}" set 失败，因为 target 是 readonly 类型`,
       target

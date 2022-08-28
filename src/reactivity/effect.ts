@@ -1,16 +1,16 @@
 import { extend } from '../shared'
 
-let activeEffect;
+let activeEffect: ReactiveEffect;
 let shouldTrack = false;
 
-class ReactiveEffect {
+export class ReactiveEffect {
   private _fn: any;
-  deps = [];
+  deps: Set<ReactiveEffect>[] = [];
   active = true;
   onStop?: () => void;
   public scheduler: Function | undefined;
 
-  constructor(fn, scheduler?: Function) {
+  constructor(fn: Function, scheduler?: Function) {
     this._fn = fn;
     this.scheduler = scheduler
   }
@@ -43,7 +43,7 @@ class ReactiveEffect {
   }
 }
 
-function cleanupEffect(effect) {
+function cleanupEffect(effect: ReactiveEffect) {
   effect.deps.forEach((dep: any) => {
     dep.delete(effect);
   });
@@ -54,7 +54,7 @@ function cleanupEffect(effect) {
 
 const targetMap = new Map()
 
-export function track (target, key) {
+export function track(target: Object, key: string) {
   if (!isTracking()) return;
 
   // target(Map) -> key(Map) -> dep(Set)
@@ -70,21 +70,29 @@ export function track (target, key) {
     depsMap.set(key, dep)
   }
 
-   // 看看 dep 之前有没有添加过，添加过的话 那么就不添加了
+  trackEffects(dep);
+}
+
+export function trackEffects(dep: Set<ReactiveEffect>) {
+  // 看看 dep 之前有没有添加过，添加过的话 那么就不添加了
   if (dep.has(activeEffect)) return;
 
   dep.add(activeEffect);
   activeEffect.deps.push(dep);
 }
 
-function isTracking() {
+export function isTracking() {
   return shouldTrack && activeEffect !== undefined;
 }
 
-export function trigger (target, key) {
+export function trigger (target: Object, key: string) {
   let depsMap = targetMap.get(target)
   let dep = depsMap.get(key)
 
+  triggerEffects(dep)
+}
+
+export function triggerEffects(dep: Set<ReactiveEffect>) {
   for (const effect of dep) {
     if (effect.scheduler) {
       effect.scheduler()
@@ -98,7 +106,7 @@ export function trigger (target, key) {
 //   scheduler?: Function;
 // };
 
-export function effect(fn, options: any = {}) {
+export function effect(fn: Function, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler)
   extend(_effect, options);
 
@@ -115,6 +123,8 @@ export function effect(fn, options: any = {}) {
   return runner;
 }
 
-export function stop(runner) {
+export function stop(runner: Function & {
+  effect: ReactiveEffect
+}) {
   runner.effect.stop();
 }

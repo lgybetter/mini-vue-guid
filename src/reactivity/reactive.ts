@@ -4,35 +4,37 @@ import {
   shallowReadonlyHandlers,
 } from './baseHandler';
 
+import { IHandler, IValue } from './types'
+
 export const enum ReactiveFlags {
   IS_REACTIVE = "__v_isReactive",
   IS_READONLY = "__v_isReadonly",
 }
 
-export function reactive(raw) {
+export function reactive<T>(raw: T): T {
   return createReactiveObject(raw, mutableHandlers)
 }
 
-export function readonly(raw) {
+export function readonly<T>(raw: T): T {
   return createReactiveObject(raw, readonlyHandlers)
 }
 
-export function shallowReadonly(raw) {
+export function shallowReadonly<T>(raw: T): T {
   return createReactiveObject(raw, shallowReadonlyHandlers);
 }
 
-export function isReactive(value) {
+export function isReactive<T extends IValue>(value: T): boolean {
   return !!value[ReactiveFlags.IS_REACTIVE];
 }
 
-export function isReadonly(value) {
+export function isReadonly<T extends IValue>(value: T): boolean {
   return !!value[ReactiveFlags.IS_READONLY];
 }
 
-export function isProxy(value) {
+export function isProxy<T extends IValue>(value: T): boolean {
   return isReactive(value) || isReadonly(value)
 }
 
-function createReactiveObject(target, baseHandles) {
-  return new Proxy(target, baseHandles);
+function createReactiveObject<T>(target: T, baseHandler: IHandler): T {
+  return new Proxy(target, baseHandler) as T;
 }
