@@ -1,6 +1,7 @@
 import { hasChanged, isObject } from "../shared";
 import { isTracking, trackEffects, triggerEffects, ReactiveEffect } from "./effect";
 import { reactive } from "./reactive";
+import { IProxyTarget } from "./types";
 
 class RefImpl<T> {
 
@@ -45,10 +46,25 @@ export function ref<T>(value: T): RefImpl<T> {
   return new RefImpl(value);
 }
 
-export function isRef<T>(ref: RefImpl<T>) {
-  return !!ref.__v_isRef
+export function isRef<T>(ref: RefImpl<T> | T): ref is RefImpl<T> {
+  return !!(ref as RefImpl<T>).__v_isRef
 }
 
-export function unRef<T>(ref: RefImpl<T>) {
+export function unRef<T>(ref: RefImpl<T> | T): RefImpl<T> | T {
   return isRef(ref) ? ref.value : ref;
+}
+
+export function proxyRefs<T extends Object>(objectWithRefs: T) {
+  return new Proxy(objectWithRefs, {
+    get(target, key) {
+      return unRef(Reflect.get(target, key))
+    },
+    set<T>(target: IProxyTarget, key: string, value: T) {
+      if (isRef(target[key]) && !isRef(value)) {
+        return (target[key] as RefImpl<T>).value = value;
+      } else {
+        return Reflect.set(target, key, value)
+      }
+    }
+  })
 }

@@ -9,3 +9,7 @@ export interface IHandler {
   get: (target: Object, key: string) => any
   set: (target: Object, key: string, value: any) => boolean
 }
+
+export interface IProxyTarget {
+  [key: string | number]: any
+}
