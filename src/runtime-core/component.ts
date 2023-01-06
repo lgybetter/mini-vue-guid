@@ -13,18 +13,17 @@ export function setupComponent(instance) {
 function setupStatefulComponent(instance) {
   const Component = instance.type
 
-  const { steup } = Component
+  const { setup } = Component
+  if (setup) {
+    const setupResult = setup();
 
-  if (steup) {
-    const steupResult = steup();
-
-    handleSetupResult(instance, steupResult)
+    handleSetupResult(instance, setupResult)
   }
 }
 
-function handleSetupResult(instance, steupResult) {
-  if (typeof steupResult === 'object') {
-    instance.steupState = steupResult
+function handleSetupResult(instance, setupResult) {
+  if (typeof setupResult === 'object') {
+    instance.setupState = setupResult
   }
 
   finishComponentSetup(instance)
