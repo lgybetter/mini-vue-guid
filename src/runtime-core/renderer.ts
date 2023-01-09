@@ -1,4 +1,5 @@
 import { isObject } from '../shared';
+import { ShapeFlags } from '../shared/ShapeFlags';
 import { 
   createComponentInstance,
   setupComponent
@@ -9,10 +10,11 @@ export function render(vnode, container) {
 }
 
 function patch(vnode, container) {
-  if (typeof vnode.type === 'string') {
+  const { shapeFlag } = vnode;
+  if (shapeFlag & ShapeFlags.ELEMENT) {
     // 处理原生节点类型 vnode
     processElement(vnode, container)
-  } else if (isObject(vnode.type)) {
+  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
     // 处理 vue 组件类型 vnode
     processComponent(vnode, container)
   }
@@ -26,12 +28,12 @@ function mountElement(vnode, container) {
   // 渲染挂载节点
   const el = (vnode.el = document.createElement(vnode.type))
 
-  const { children } = vnode
+  const { children, shapeFlag } = vnode
 
-  if (typeof children === "string") {
+  if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     // 子节点为文本
     el.textContent = children;
-  } else if (Array.isArray(children)) {
+  } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     // 子节点为多个节点
     mountChildren(vnode, el);
   }
