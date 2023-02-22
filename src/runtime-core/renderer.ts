@@ -1,27 +1,48 @@
-import { isObject } from '../shared';
 import { ShapeFlags } from '../shared/ShapeFlags';
 import { 
   createComponentInstance,
   setupComponent
 } from './component'
+import { Fragment, Text } from './vnode';
 
 export function render(vnode, container) {
   patch(vnode, container)
 }
 
 function patch(vnode, container) {
-  const { shapeFlag } = vnode;
-  if (shapeFlag & ShapeFlags.ELEMENT) {
-    // 处理原生节点类型 vnode
-    processElement(vnode, container)
-  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-    // 处理 vue 组件类型 vnode
-    processComponent(vnode, container)
+  const { type, shapeFlag } = vnode;
+
+  switch (type) {
+    case Fragment:
+      processFragment(vnode, container);
+      break;
+    case Text:
+      processText(vnode, container);
+      break;
+    default:
+      if (shapeFlag & ShapeFlags.ELEMENT) {
+        // 处理原生节点类型 vnode
+        processElement(vnode, container)
+      } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+        // 处理 vue 组件类型 vnode
+        processComponent(vnode, container)
+      }
+      break;
   }
 }
 
+function processText (vnode, container) {
+  const { children } = vnode;
+  const textNode = (vnode.el = document.createTextNode(children));
+  container.append(textNode);
+}
+
+function processFragment (vnode, container) {
+  mountChildren(vnode, container);
+}
+
 function processElement (vnode, container) {
-  mountElement(vnode, container); 
+  mountElement(vnode, container);
 }
 
 function mountElement(vnode, container) {
